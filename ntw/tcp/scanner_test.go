@@ -2,16 +2,22 @@ package tcp_test
 
 import (
 	"bufio"
+	"errors"
+	"log"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	payload = "The bigger the interface, the weaker the abstraction"
+	maxTries = 7
+	retryInterval = 5 * time.Second
+)
+
 // bufio.Scanner - allows reading delimited data
-
-const payload = "The bigger the interface, the weaker the abstraction"
-
 func TestScanner(t *testing.T) {
 	listener, err := net.Listen("tcp", "127.0.0.1:")
 	if err != nil {
@@ -26,9 +32,23 @@ func TestScanner(t *testing.T) {
 		}
 		defer conn.Close()
 
-		_, err = conn.Write([]byte(payload))
-		if err != nil {
-			t.Error(err)
+		var writeErr error
+		for tries := maxTries; tries > 0; tries-- {
+			_, writeErr = conn.Write([]byte(payload))
+			if writeErr != nil {
+				if netErr, ok := writeErr.(net.Error); ok && netErr.Timeout() {
+					log.Println("temporary error:", netErr)
+					time.Sleep(retryInterval)
+					continue
+				}
+				t.Error(writeErr)
+				break
+			}
+			break
+		}
+
+		if writeErr != nil {
+			t.Error(errors.New("temporary write failure threshold exceeded"))
 		}
 	}()
 

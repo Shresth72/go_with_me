@@ -91,7 +91,7 @@ func TestFileReadIntoBuffer(t *testing.T) {
 	}()
 
 	// Read expected content from file
-	expectedFile, err := os.Open("file.txt")
+	expectedFile, err := os.Open("buffer_file.txt")
 	if err != nil {
 		t.Fatal(err)
 	}

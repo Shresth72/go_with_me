@@ -75,9 +75,9 @@ func decode(r io.Reader) (Payload, error) {
 		return nil, errors.New("unknown type")
 	}
 
-  if _, err := payload.ReadFrom(r); err != nil {
-    return nil, err
-  }
+	if _, err := payload.ReadFrom(r); err != nil {
+		return nil, err
+	}
 
 	return payload, nil
 }

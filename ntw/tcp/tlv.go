@@ -51,7 +51,7 @@ func (m Binary) WriteTo(w io.Writer) (int64, error) {
 
 func (m *Binary) ReadFrom(r io.Reader) (int64, error) {
 	var size uint32
-  err := binary.Read(r, binary.BigEndian, &size)
+	err := binary.Read(r, binary.BigEndian, &size)
 	if err != nil {
 		return 0, err
 	}
@@ -91,7 +91,7 @@ func (m String) WriteTo(w io.Writer) (int64, error) {
 
 func (m *String) ReadFrom(r io.Reader) (int64, error) {
 	var size uint32
-  err := binary.Read(r, binary.BigEndian, &size)
+	err := binary.Read(r, binary.BigEndian, &size)
 	if err != nil {
 		return 0, err
 	}
