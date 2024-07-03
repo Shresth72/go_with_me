@@ -11,7 +11,7 @@ import (
 )
 
 func TestReadIntoBuffer(t *testing.T) {
-  // Server
+	// Server
 	payload := make([]byte, 1<<24) // send 16Mb
 	_, err := rand.Read(payload)
 	if err != nil {
@@ -37,7 +37,7 @@ func TestReadIntoBuffer(t *testing.T) {
 		}
 	}()
 
-  // Client
+	// Client
 	conn, err := net.Dial("tcp", listener.Addr().String())
 	if err != nil {
 		t.Fatal(err)
@@ -59,11 +59,11 @@ func TestReadIntoBuffer(t *testing.T) {
 		receivedData = append(receivedData, buf[:n]...)
 	}
 
-	assert.Equal(t, payload, receivedData, "The received data should match the sent payload")
+	assert.Equal(t, payload, receivedData)
 }
 
 func TestFileReadIntoBuffer(t *testing.T) {
-  // Server
+	// Server
 	listener, err := net.Listen("tcp", "127.0.0.1:")
 	if err != nil {
 		t.Fatal(err)
@@ -123,5 +123,5 @@ func TestFileReadIntoBuffer(t *testing.T) {
 		receivedData = append(receivedData, buf[:n]...)
 	}
 
-	assert.Equal(t, expectedContent, receivedData, "The received data should match the content of the file")
+	assert.Equal(t, expectedContent, receivedData)
 }
