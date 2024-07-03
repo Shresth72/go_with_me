@@ -77,7 +77,7 @@ func TestFileReadIntoBuffer(t *testing.T) {
 		}
 		defer conn.Close()
 
-		file, err := os.Open("file.txt")
+		file, err := os.Open("buffer_file.txt")
 		if err != nil {
 			t.Error(err)
 			return
