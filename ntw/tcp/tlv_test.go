@@ -1,7 +1,6 @@
 package tcp
 
 import (
-	"bytes"
 	"encoding/binary"
 	"errors"
 	"io"
@@ -76,11 +75,9 @@ func decode(r io.Reader) (Payload, error) {
 		return nil, errors.New("unknown type")
 	}
 
-	_, err = payload.ReadFrom(
-		io.MultiReader(bytes.NewReader([]byte{typ}), r))
-	if err != nil {
-		return nil, err
-	}
+  if _, err := payload.ReadFrom(r); err != nil {
+    return nil, err
+  }
 
 	return payload, nil
 }

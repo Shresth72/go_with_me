@@ -50,32 +50,20 @@ func (m Binary) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (m *Binary) ReadFrom(r io.Reader) (int64, error) {
-	var typ uint8
-	err := binary.Read(r, binary.BigEndian, &typ) // 1byte type
+	var size uint32
+  err := binary.Read(r, binary.BigEndian, &size)
 	if err != nil {
 		return 0, err
 	}
-	var n int64 = 1
-
-	if typ != BinaryType {
-		return n, errors.New("invalid Binary")
-	}
-
-	var size uint32
-	err = binary.Read(r, binary.BigEndian, &size)
-	if err != nil {
-		return n, err
-	}
-	n += 4
 
 	if size > MaxPayloadSize {
-		return n, ErrMaxPayloadSize
+		return 4, ErrMaxPayloadSize
 	}
 
 	*m = make([]byte, size)
-	o, err := r.Read(*m) // payload
+	p, err := r.Read(*m) // payload
 
-	return n + int64(o), err
+	return int64(p) + 4, err
 }
 
 // String implements Payload
@@ -102,30 +90,19 @@ func (m String) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (m *String) ReadFrom(r io.Reader) (int64, error) {
-	var typ uint8
-	err := binary.Read(r, binary.BigEndian, &typ)
+	var size uint32
+  err := binary.Read(r, binary.BigEndian, &size)
 	if err != nil {
 		return 0, err
 	}
-	var n int64 = 1
-
-	if typ != StringType {
-		return n, errors.New("invalid String")
-	}
-
-	var size uint32
-	err = binary.Read(r, binary.BigEndian, &size)
-	if err != nil {
-		return n, err
-	}
-	n += 4
 
 	buf := make([]byte, size)
-	o, err := r.Read(buf)
+	p, err := r.Read(buf)
 	if err != nil {
-		return n, err
+		return 4, err
 	}
+
 	*m = String(buf)
 
-	return n + int64(o), nil
+	return int64(p) + 4, nil
 }
