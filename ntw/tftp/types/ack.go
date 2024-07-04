@@ -6,9 +6,10 @@ import (
 	"errors"
 )
 
-// Acknowledgement Packets
-// 2 bytes    2 bytes
-// OpCode     Block #
+/* Acknowledgement Packets
+   2 bytes    2 bytes
+   OpCode     Block #
+*/
 type Ack uint16
 
 // Used by Client (to send ACK)

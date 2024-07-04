@@ -7,9 +7,10 @@ import (
 	"strings"
 )
 
-// Errors
-// 2 bytes    2 bytes    n bytes    1 byte
-// OpCode     ErrCode    Message    0
+/* Errors
+   2 bytes    2 bytes    n bytes    1 byte
+   OpCode     ErrCode    Message    0
+*/
 type Err struct {
 	Error   ErrCode
 	Message string

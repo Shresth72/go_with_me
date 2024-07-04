@@ -7,9 +7,10 @@ import (
 	"strings"
 )
 
-// Read Request
-// 2 bytes   n bytes    1 byte   n bytes   1 byte
-// OpCode    Filename   0        Mode      0
+/* Read Request
+   2 bytes   n bytes    1 byte   n bytes   1 byte
+   OpCode    Filename   0        Mode      0
+*/
 type ReadReq struct {
 	Filename string
 	Mode     string

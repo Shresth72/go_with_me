@@ -5,8 +5,11 @@ const (
 	BlockSize    = DatagramSize - 4 // 4byte header
 )
 
-// RFC 1350
-// OpCode - first 2bytes of the header
+/* 
+RFC 1350
+
+OpCode - first 2bytes of the header
+*/
 type OpCode uint16
 
 const (

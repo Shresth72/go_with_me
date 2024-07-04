@@ -7,9 +7,10 @@ import (
 	"io"
 )
 
-// Data Packet
-// 2 bytes   2 bytes   n bytes
-// OpCode    Block #   Payload
+/* Data Packet
+   2 bytes   2 bytes   n bytes
+   OpCode    Block #   Payload
+*/
 type Data struct {
 	Block   uint16
 	Payload io.Reader
