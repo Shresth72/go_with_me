@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	payload = "The bigger the interface, the weaker the abstraction"
-	maxTries = 7
+	payload       = "The bigger the interface, the weaker the abstraction"
+	maxTries      = 7
 	retryInterval = 5 * time.Second
 )
 
