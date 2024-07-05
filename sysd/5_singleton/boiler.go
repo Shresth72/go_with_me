@@ -24,7 +24,7 @@ var once sync.Once
 var instance *ChocolateBoiler
 
 // Returns the singleton instance
-func NewChololateBoiler() *ChocolateBoiler {
+func NewChocolateBoiler() *ChocolateBoiler {
 	once.Do(func() {
 		instance = &ChocolateBoiler{
 			empty:  true,

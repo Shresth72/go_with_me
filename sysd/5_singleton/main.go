@@ -3,7 +3,7 @@ package main
 import "sync"
 
 func main() {
-  boiler := NewChololateBoiler()
+  boiler := NewChocolateBoiler()
 
   var wg sync.WaitGroup
   wg.Add(3)
