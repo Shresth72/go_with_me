@@ -1,27 +1,44 @@
 package main
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 func main() {
-  boiler := NewChocolateBoiler()
+	boiler := NewChocolateBoiler()
 
-  var wg sync.WaitGroup
-  wg.Add(3)
+	var wg sync.WaitGroup
+	wg.Add(3)
 
-  go func ()  {
-    defer wg.Done()
-    boiler.Fill()
-  }()
+	go func() {
+		defer wg.Done()
+		err := boiler.Fill()
+		if err != nil {
+			println(err)
+			return
+		}
+	}()
+	time.Sleep(1 * time.Second)
 
-  go func ()  {
-    defer wg.Done()
-    boiler.Boil()
-  }()
+	go func() {
+		defer wg.Done()
+		err := boiler.Boil()
+		if err != nil {
+			println(err)
+			return
+		}
+	}()
+	time.Sleep(1 * time.Second)
 
-  go func() {
-    defer wg.Done()
-    boiler.Drain()
-  }()
+	go func() {
+		defer wg.Done()
+		err := boiler.Drain()
+		if err != nil {
+			println(err)
+			return
+		}
+	}()
 
-  wg.Wait()
+	wg.Wait()
 }

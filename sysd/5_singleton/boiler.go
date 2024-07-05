@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"sync"
+	"time"
 )
 
 type Boiler interface {
@@ -23,6 +25,12 @@ type ChocolateBoiler struct {
 var once sync.Once
 var instance *ChocolateBoiler
 
+const (
+  timeForRequest = 1 * time.Second
+  timeoutDuration = 1 * time.Second
+  timoutError = "timout occurred"
+)
+
 // Returns the singleton instance
 func NewChocolateBoiler() *ChocolateBoiler {
 	once.Do(func() {
@@ -35,12 +43,23 @@ func NewChocolateBoiler() *ChocolateBoiler {
 	return instance
 }
 
-func (c *ChocolateBoiler) Fill() {
+func (c *ChocolateBoiler) Fill() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	c1 := make(chan string, 1)
+	go func() {
+		time.Sleep(timeForRequest)
+		c1 <- "res"
+	}()
+
 	for !c.IsEmpty() {
-		c.cond.Wait()
+		select {
+		case _ = <-c1:
+			c.cond.Wait()
+		case <-time.After(timeoutDuration):
+			return errors.New("timeout while waiting to fill")
+		}
 	}
 
 	c.empty = false
@@ -49,40 +68,70 @@ func (c *ChocolateBoiler) Fill() {
 	// full the boiler with milk/choco mix
 	fmt.Println("Boiler is filled")
 	c.cond.Broadcast()
+	return nil
 }
 
-func (c *ChocolateBoiler) Drain() {
+func (c *ChocolateBoiler) Boil() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	for c.IsEmpty() || !c.IsBoiled() {
-		c.cond.Wait()
-	}
-
-	// drain the boiled contents
-	c.empty = true
-	fmt.Println("Boiler is drained")
-	c.cond.Broadcast()
-}
-
-func (c *ChocolateBoiler) Boil() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
+	timeout := time.After(2 * time.Second)
 	for c.IsEmpty() || c.IsBoiled() {
-		c.cond.Wait()
+		select {
+		case <-timeout:
+			return errors.New("timeout while waiting to boil")
+		default:
+			c.cond.Wait()
+		}
 	}
 
 	// bring the contents to boil
 	c.boiled = true
 	fmt.Println("Boiler is boiled")
 	c.cond.Broadcast()
+	return nil
 }
 
+func (c *ChocolateBoiler) Drain() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	timeout := time.After(2 * time.Second)
+	for c.IsEmpty() || !c.IsBoiled() {
+		select {
+		case <-timeout:
+			return errors.New("timeout while waiting to drain")
+		default:
+			c.cond.Wait()
+		}
+	}
+
+	// drain the boiled contents
+	c.empty = true
+	c.boiled = false
+	fmt.Println("Boiler is drained")
+	c.cond.Broadcast()
+	return nil
+}
+
+// Utils
 func (c *ChocolateBoiler) IsEmpty() bool {
 	return c.empty
 }
 
 func (c *ChocolateBoiler) IsBoiled() bool {
 	return c.boiled
+}
+
+// Setter for tests
+func (c *ChocolateBoiler) SetEmpty(empty bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.empty = empty
+}
+
+func (c *ChocolateBoiler) SetBoiled(boiled bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.boiled = boiled
 }
