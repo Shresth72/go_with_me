@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"context"
 	"sync"
 	"testing"
 	"time"
@@ -90,39 +91,46 @@ func (suite *ChocolateBoilerTestSuite) TestDrain() {
 }
 
 func (suite *ChocolateBoilerTestSuite) TestFillWhenNotEmpty() {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
 	err := suite.boiler.Fill()
 	assert.Nil(suite.T(), err, "fill should not timeout")
 	time.Sleep(100 * time.Millisecond)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-
+	done := make(chan bool)
 	go func() {
-		defer wg.Done()
-		err = suite.boiler.Fill()
-		assert.NotNil(suite.T(), err, "fill should timeout when boiler is not empty")
+		suite.boiler.Fill()
+		done <- true
 	}()
 
-	wg.Wait()
-	assert.False(suite.T(), suite.boiler.IsEmpty(), "boiler should not be empty after attempted fill")
-	assert.False(suite.T(), suite.boiler.IsBoiled(), "boiler should not be boiled after attempted fill")
+	select {
+	case <-ctx.Done():
+		assert.True(suite.T(), true, "fill should timeout after already being filled")
+		assert.False(suite.T(), suite.boiler.IsEmpty(), "boiler should not be empty after attempted fill")
+		assert.False(suite.T(), suite.boiler.IsBoiled(), "boiler should not be boiled after attempted fill")
+	case <-done:
+		assert.Fail(suite.T(), "fill function returned unexpectedly")
+	}
 }
 
 func (suite *ChocolateBoilerTestSuite) TestBoilWhenNotFilled() {
-	suite.boiler.SetEmpty(true)
-	suite.boiler.SetBoiled(false)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
 
-	var wg sync.WaitGroup
-	wg.Add(1)
+	done := make(chan bool)
 
 	go func() {
-		defer wg.Done()
-		err := suite.boiler.Boil()
-		assert.NotNil(suite.T(), err, "boil should timout when boiler is empty")
+		suite.boiler.Boil()
+		done <- true
 	}()
 
-	time.Sleep(100 * time.Millisecond)
-	wg.Wait()
-	assert.True(suite.T(), suite.boiler.IsEmpty(), "Boiler should be empty after attempted boil")
-	assert.False(suite.T(), suite.boiler.IsBoiled(), "Boiler should not be boiled after attempted boil")
+	select {
+	case <-ctx.Done():
+		assert.True(suite.T(), true, "Boil request should timeout after 3 seconds")
+		assert.True(suite.T(), suite.boiler.IsEmpty(), "Boiler should be empty after attempted boil")
+		assert.False(suite.T(), suite.boiler.IsBoiled(), "Boiler should not be boiled after attempted boil")
+	case <-done:
+		assert.Fail(suite.T(), "Boil function returned unexpectedly")
+	}
 }

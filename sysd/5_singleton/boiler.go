@@ -26,9 +26,9 @@ var once sync.Once
 var instance *ChocolateBoiler
 
 const (
-  timeForRequest = 1 * time.Second
-  timeoutDuration = 1 * time.Second
-  timoutError = "timout occurred"
+	timeForRequest  = 1 * time.Second
+	timeoutDuration = 1 * time.Second
+	timoutError     = "timout occurred"
 )
 
 // Returns the singleton instance
@@ -47,19 +47,8 @@ func (c *ChocolateBoiler) Fill() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c1 := make(chan string, 1)
-	go func() {
-		time.Sleep(timeForRequest)
-		c1 <- "res"
-	}()
-
 	for !c.IsEmpty() {
-		select {
-		case _ = <-c1:
-			c.cond.Wait()
-		case <-time.After(timeoutDuration):
-			return errors.New("timeout while waiting to fill")
-		}
+		c.cond.Wait()
 	}
 
 	c.empty = false
@@ -75,14 +64,8 @@ func (c *ChocolateBoiler) Boil() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	timeout := time.After(2 * time.Second)
-	for c.IsEmpty() || c.IsBoiled() {
-		select {
-		case <-timeout:
-			return errors.New("timeout while waiting to boil")
-		default:
-			c.cond.Wait()
-		}
+	for c.IsEmpty() {
+		c.cond.Wait()
 	}
 
 	// bring the contents to boil
