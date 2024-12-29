@@ -1,13 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"net"
 	"os"
 )
 
 const (
-	PORT = 6970
+	PORT        = 6970
+	BUFFER_SIZE = 1024
 )
 
 func main() {
@@ -30,7 +32,26 @@ func main() {
 			continue
 		}
 
-		fmt.Println("OK")
-		conn.Close()
+		go handleClient(conn)
 	}
+}
+
+func handleClient(conn net.Conn) {
+	defer conn.Close()
+
+	buffer := make([]byte, BUFFER_SIZE)
+
+	n, err := bufio.NewReader(conn).Read(buffer)
+	if err != nil {
+		fmt.Printf("Error reading from client: %v\n", err)
+		return
+	}
+
+	_, err = conn.Write(buffer[:n])
+	if err != nil {
+		fmt.Printf("Error writing to client: %v\n", err)
+		return
+	}
+
+	// fmt.Printf("Client sent: %s\n", string(buffer[:n]))
 }
